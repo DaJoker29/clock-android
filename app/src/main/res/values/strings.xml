@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Tick Tock</string>
-    <string name="project_name">New Project Name</string>
-    <string name="create_project">Create Project</string>
-    <string name="project_added">New Project Added.</string>
+    <string name="new_project_name_placeholder">Enter project name</string>
+    <string name="new_project_name_button_text">Set Project Name</string>
+    <string name="default_project_string">NO project</string>
 </resources>

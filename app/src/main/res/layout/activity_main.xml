@@ -7,13 +7,14 @@
     tools:context=".MainActivity">
 
     <EditText
-        android:id="@+id/editText"
+        android:id="@+id/newProjectName"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
+        android:layout_marginEnd="2dp"
         android:ems="10"
-        android:hint="@string/project_name"
+        android:hint="@string/new_project_name_placeholder"
         android:importantForAutofill="no"
         android:inputType="textPersonName"
         app:layout_constraintEnd_toStartOf="@+id/button"
@@ -27,10 +28,35 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="13dp"
         android:layout_marginEnd="16dp"
-        android:onClick="createProject"
-        android:text="@string/create_project"
-        app:layout_constraintBaseline_toBaselineOf="@+id/editText"
+        android:onClick="setProject"
+        android:text="@string/new_project_name_button_text"
+        app:layout_constraintBaseline_toBaselineOf="@+id/newProjectName"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/editText" />
+        app:layout_constraintStart_toEndOf="@+id/newProjectName" />
+
+    <TextView
+        android:id="@+id/currentProjectDisplay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/default_project_string"
+        android:textAlignment="center"
+        android:textAllCaps="true"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Current Project:"
+        android:textAllCaps="false"
+        android:textStyle="italic"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/button" />
 </android.support.constraint.ConstraintLayout>

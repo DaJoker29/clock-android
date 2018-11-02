@@ -16,10 +16,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".DisplayMessageActivity"
-            android:parentActivityName=".MainActivity" />
-        <activity android:name=".CreateProjectActivity" android:parentActivityName=".MainActivity"></activity>
     </application>
 
 </manifest>
