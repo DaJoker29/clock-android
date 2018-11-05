@@ -3,6 +3,7 @@ package com.zerodaedalus.www.clock;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.SystemClock;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -21,6 +22,7 @@ public class MainActivity extends AppCompatActivity {
     Chronometer timerBreak;
     SharedPreferences sharedPref;
     SharedPreferences.Editor editor;
+    Snackbar snackbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,13 +37,14 @@ public class MainActivity extends AppCompatActivity {
         initializeTimerClock();
         initializeTimerBreak();
 
+        Button toggleBreak = (Button) findViewById(R.id.toggleBreak);
+
         // Set current project display
         TextView projectName = (TextView) findViewById(R.id.projectName);
         projectName.setText(String.format(getResources().getString(R.string.project_display), currentProject));
     }
 
     public void toggleBreak(View view) {
-        Button toggleBreak = (Button) findViewById(R.id.toggleBreak);
         if(!isClockRunning) {
             return;
         }
@@ -53,11 +56,12 @@ public class MainActivity extends AppCompatActivity {
         if(isBreakRunning) {
             timerBreak.stop();
             timerClock.start();
-            toggleBreak.setText(R.string.break_in_string);
-        } else {
+            Snackbar.make(findViewById(R.id.coordinatorLayout), R.string.break_ended, Snackbar.LENGTH_SHORT).show();
+            } else {
             timerBreak.start();
             timerClock.stop();
-            toggleBreak.setText(R.string.break_out_string);
+
+            Snackbar.make(findViewById(R.id.coordinatorLayout), R.string.break_started, Snackbar.LENGTH_SHORT).show();
         }
         isBreakRunning = !isBreakRunning;
     }
@@ -75,10 +79,9 @@ public class MainActivity extends AppCompatActivity {
 
             timerClock.start();
 
-            timerBreak.setText("");
+            Snackbar.make(findViewById(R.id.coordinatorLayout), R.string.clock_started, Snackbar.LENGTH_SHORT).show();
 
-            toggleClock.setText(R.string.clock_out_string);
-            toggleClock.setBackgroundColor(getResources().getColor(R.color.colorWarning, getTheme()));
+            timerBreak.setText("");
 
             timerClock.setTextColor(getResources().getColor(R.color.colorWarning, getTheme()));
         } else {
@@ -86,11 +89,10 @@ public class MainActivity extends AppCompatActivity {
             timerClock.stop();
             timerBreak.stop();
 
+            Snackbar.make(findViewById(R.id.coordinatorLayout), R.string.clock_ended, Snackbar.LENGTH_SHORT).show();
+
             timerBreak.setText(String.format("Total Break: \n%s", convertTime(breakCount)));
             timerClock.setText(String.format("Completed: \n%s", convertTime(clockCount)));
-
-            toggleClock.setText(R.string.clock_in_string);
-            toggleClock.setBackgroundColor(getResources().getColor(R.color.colorPrimary, getTheme()));
 
             timerClock.setTextColor(getResources().getColor(R.color.colorBlack, getTheme()));
         }

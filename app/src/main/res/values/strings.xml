@@ -8,4 +8,8 @@
     <string name="break_in_string">Take a Break</string>
     <string name="break_out_string">End Break</string>
     <string name="project_display">Current Project: %1$s</string>
+    <string name="clock_started">Clocking in.</string>
+    <string name="clock_ended">Clocking out.</string>
+    <string name="break_started">Taking a break.</string>
+    <string name="break_ended">Going back to work.</string>
 </resources>
