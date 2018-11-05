@@ -13,9 +13,12 @@ import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
 
-    private long timeWhenStopped = 0;
     private boolean isClockRunning = false;
-    Chronometer timer;
+    private boolean isBreakRunning = false;
+    private long clockCount;
+    private long breakCount;
+    Chronometer timerClock;
+    Chronometer timerBreak;
     SharedPreferences sharedPref;
     SharedPreferences.Editor editor;
 
@@ -29,81 +32,100 @@ public class MainActivity extends AppCompatActivity {
 //        editor = sharedPref.edit();
         String currentProject = sharedPref.getString("current_project", "No active project");
 //        updateCurrentProject();
-        initializeTimer();
+        initializeTimerClock();
+        initializeTimerBreak();
 
         // Set current project display
         TextView projectName = (TextView) findViewById(R.id.projectName);
         projectName.setText(String.format(getResources().getString(R.string.project_display), currentProject));
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-//        updateCurrentProject();
-    }
-
-//    public void updateCurrentProject() {
-//        // Fetch current project from Shared Preferences and display
-//        String currentProject = sharedPref.getString("current_project", "No active project");
-//
-//        // Write new name to text view
-//        TextView textView = findViewById(R.id.currentProject);
-//        textView.setText(currentProject);
-//    }
-//
-//    public void setProject(View view) {
-//        // Fetch input text
-//        EditText newProjectName = (EditText) findViewById(R.id.newProjectName);
-//        String currentProject = newProjectName.getText().toString();
-//
-//        // Save input text as current project name
-//        editor.putString("current_project", currentProject);
-//        editor.commit();
-//        recreate();
-//    }
-
-    public void toggleClock(View view) {
-
-        // Import button
-        Button toggleClock = (Button) findViewById(R.id.toggleClock);
-
-        // Clock in if clock is not running.
-        if (!isClockRunning) {
-            timer.setBase(SystemClock.elapsedRealtime());
-            timer.start();
-            toggleClock.setText(R.string.clock_out_string);
-            toggleClock.setBackgroundColor(getResources().getColor(R.color.colorWarning, getTheme()));
-            timer.setTextColor(getResources().getColor(R.color.colorWarning, getTheme()));
-        } else {
-            // Clock out if clock is running.
-            timer.stop();
-            timer.setText(String.format("Completed: \n%s", convertTime()));
-            toggleClock.setText(R.string.clock_in_string);
-            toggleClock.setBackgroundColor(getResources().getColor(R.color.colorPrimary, getTheme()));
-            timer.setTextColor(getResources().getColor(R.color.colorBlack, getTheme()));
+    public void toggleBreak(View view) {
+        Button toggleBreak = (Button) findViewById(R.id.toggleBreak);
+        if(!isClockRunning) {
+            return;
         }
 
+        timerClock.setText(String.format("Elapsed: \n%s", convertTime(clockCount)));
+        timerBreak.setText(String.format("Time on Break: \n%s", convertTime(breakCount)));
+
+
+        if(isBreakRunning) {
+            timerBreak.stop();
+            timerClock.start();
+            toggleBreak.setText(R.string.break_in_string);
+        } else {
+            timerBreak.start();
+            timerClock.stop();
+            toggleBreak.setText(R.string.break_out_string);
+        }
+        isBreakRunning = !isBreakRunning;
+    }
+
+    public void toggleClock(View view) {
+        Button toggleClock = (Button) findViewById(R.id.toggleClock);
+
+        if (isBreakRunning) {
+            return;
+        }
+
+        if (!isClockRunning) {
+            clockCount = 0;
+            breakCount = 0;
+
+            timerClock.start();
+
+            timerBreak.setText("");
+
+            toggleClock.setText(R.string.clock_out_string);
+            toggleClock.setBackgroundColor(getResources().getColor(R.color.colorWarning, getTheme()));
+
+            timerClock.setTextColor(getResources().getColor(R.color.colorWarning, getTheme()));
+        } else {
+            // Clock out if clock is running.
+            timerClock.stop();
+            timerBreak.stop();
+
+            timerBreak.setText(String.format("Total Break: \n%s", convertTime(breakCount)));
+            timerClock.setText(String.format("Completed: \n%s", convertTime(clockCount)));
+
+            toggleClock.setText(R.string.clock_in_string);
+            toggleClock.setBackgroundColor(getResources().getColor(R.color.colorPrimary, getTheme()));
+
+            timerClock.setTextColor(getResources().getColor(R.color.colorBlack, getTheme()));
+        }
         isClockRunning = !isClockRunning;
     }
 
-    private String convertTime() {
-        long time = SystemClock.elapsedRealtime() - timer.getBase();
-        int h   = (int)(time / 3600000);
-        int m = (int)(time - h * 3600000)/60000;
-        int s= (int)(time - h * 3600000 - m *60000)/1000;
+    private String convertTime(long time) {
+        int h = (int)(time / 3600);
+        int m = (int)(time - h * 3600) / 60;
+        int s = (int)(time - h * 3600 - m * 60);
         String t = String.format("%02d hr : %02d min : %02d sec", h, m, s);
         return t;
     }
 
-    private void initializeTimer() {
-        timer = (Chronometer) findViewById(R.id.clockTimer);
-        timer.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener(){
+    private void initializeTimerClock() {
+        timerClock = (Chronometer) findViewById(R.id.timerClock);
+        timerClock.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener(){
             @Override
             public void onChronometerTick(Chronometer chronometer) {
-                chronometer.setText(String.format("Elapsed: \n%s", convertTime()));
+                chronometer.setText(String.format("Elapsed: \n%s", convertTime(clockCount)));
+                clockCount++;
             }
         });
-        timer.setBase(SystemClock.elapsedRealtime());
-        timer.setText("");
+        timerClock.setText("");
+    }
+
+    private void initializeTimerBreak() {
+        timerBreak = (Chronometer) findViewById(R.id.timerBreak);
+        timerBreak.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener(){
+            @Override
+            public void onChronometerTick(Chronometer chronometer) {
+                chronometer.setText(String.format("Time on Break: \n%s", convertTime(breakCount)));
+                breakCount++;
+            }
+        });
+        timerBreak.setText("");
     }
 }
