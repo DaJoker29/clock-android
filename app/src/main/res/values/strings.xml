@@ -1,6 +1,11 @@
 <resources>
     <string name="app_name">Tick Tock</string>
     <string name="new_project_name_placeholder">Enter project name</string>
-    <string name="new_project_name_button_text">Set Project Name</string>
-    <string name="default_project_string">NO project</string>
+    <string name="new_project_name_button_text">New Project</string>
+    <string name="default_project_string">None</string>
+    <string name="clock_in_string">Clock In</string>
+    <string name="clock_out_string">Clock Out</string>
+    <string name="break_in_string">Take a Break</string>
+    <string name="break_out_string">End Break</string>
+    <string name="project_display">Current Project: %1$s</string>
 </resources>

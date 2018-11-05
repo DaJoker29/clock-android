@@ -6,6 +6,7 @@ import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -13,6 +14,7 @@ import android.widget.TextView;
 public class MainActivity extends AppCompatActivity {
 
     private long timeWhenStopped = 0;
+    private boolean isClockRunning = false;
     Chronometer timer;
     SharedPreferences sharedPref;
     SharedPreferences.Editor editor;
@@ -24,49 +26,64 @@ public class MainActivity extends AppCompatActivity {
 
         // Startup code
         sharedPref = this.getPreferences(Context.MODE_PRIVATE);
-        editor = sharedPref.edit();
-        updateCurrentProject();
+//        editor = sharedPref.edit();
+        String currentProject = sharedPref.getString("current_project", "No active project");
+//        updateCurrentProject();
         initializeTimer();
+
+        // Set current project display
+        TextView projectName = (TextView) findViewById(R.id.projectName);
+        projectName.setText(String.format(getResources().getString(R.string.project_display), currentProject));
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        updateCurrentProject();
+//        updateCurrentProject();
     }
 
-    public void updateCurrentProject() {
-        // Fetch current project from Shared Preferences and display
-        String currentProject = sharedPref.getString("current_project", "No active project");
+//    public void updateCurrentProject() {
+//        // Fetch current project from Shared Preferences and display
+//        String currentProject = sharedPref.getString("current_project", "No active project");
+//
+//        // Write new name to text view
+//        TextView textView = findViewById(R.id.currentProject);
+//        textView.setText(currentProject);
+//    }
+//
+//    public void setProject(View view) {
+//        // Fetch input text
+//        EditText newProjectName = (EditText) findViewById(R.id.newProjectName);
+//        String currentProject = newProjectName.getText().toString();
+//
+//        // Save input text as current project name
+//        editor.putString("current_project", currentProject);
+//        editor.commit();
+//        recreate();
+//    }
 
-        // Write new name to text view
-        TextView textView = findViewById(R.id.currentProjectDisplay);
-        textView.setText(currentProject);
-    }
+    public void toggleClock(View view) {
 
-    public void setProject(View view) {
-        // Fetch input text
-        EditText newProjectName = (EditText) findViewById(R.id.newProjectName);
-        String currentProject = newProjectName.getText().toString();
+        // Import button
+        Button toggleClock = (Button) findViewById(R.id.toggleClock);
 
-        // Save input text as current project name
-        editor.putString("current_project", currentProject);
-        editor.commit();
-        recreate();
-    }
+        // Clock in if clock is not running.
+        if (!isClockRunning) {
+            timer.setBase(SystemClock.elapsedRealtime());
+            timer.start();
+            toggleClock.setText(R.string.clock_out_string);
+            toggleClock.setBackgroundColor(getResources().getColor(R.color.colorWarning, getTheme()));
+            timer.setTextColor(getResources().getColor(R.color.colorWarning, getTheme()));
+        } else {
+            // Clock out if clock is running.
+            timer.stop();
+            timer.setText(String.format("Completed: \n%s", convertTime()));
+            toggleClock.setText(R.string.clock_in_string);
+            toggleClock.setBackgroundColor(getResources().getColor(R.color.colorPrimary, getTheme()));
+            timer.setTextColor(getResources().getColor(R.color.colorBlack, getTheme()));
+        }
 
-    public void clockIn(View view) {
-        // Start timer
-        timer.setBase(SystemClock.elapsedRealtime());
-        timer.start();
-        // Enable clock out button
-    }
-
-    public void clockOut(View view) {
-        // End Timer
-        timer.stop();
-        timer.setText(String.format("Completed: \n%s", convertTime()));
-        // Display total time with project name.
+        isClockRunning = !isClockRunning;
     }
 
     private String convertTime() {
@@ -79,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initializeTimer() {
-        timer = (Chronometer) findViewById(R.id.displayTimer);
+        timer = (Chronometer) findViewById(R.id.clockTimer);
         timer.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener(){
             @Override
             public void onChronometerTick(Chronometer chronometer) {
