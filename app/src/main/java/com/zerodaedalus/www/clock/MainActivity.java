@@ -1,15 +1,23 @@
 package com.zerodaedalus.www.clock;
 
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.SystemClock;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.ProgressBar;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
@@ -23,9 +31,11 @@ public class MainActivity extends AppCompatActivity {
     SharedPreferences sharedPref;
     SharedPreferences.Editor editor;
     Snackbar snackbar;
+    MyViewModel model;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -42,6 +52,24 @@ public class MainActivity extends AppCompatActivity {
         // Set current project display
         TextView projectName = (TextView) findViewById(R.id.projectName);
         projectName.setText(String.format(getResources().getString(R.string.project_display), currentProject));
+
+        RadioGroup projectList = (RadioGroup) findViewById(R.id.projectList);
+
+        model = ViewModelProviders.of(this).get(MyViewModel.class);
+        model.getProjects().observe(this, projects -> {
+            for (int i = 0; i < projects.size(); i++) {
+                RadioButton radioButton = new RadioButton(this);
+                radioButton.setId(i + 1000);
+                radioButton.setText(projects.get(i));
+                projectList.addView(radioButton);
+            }
+            RadioButton radioDefault = (RadioButton) findViewById(R.id.radioDefault);
+            projectList.removeView(radioDefault);
+        });
+    }
+
+    public void setActiveProject(View view) {
+
     }
 
     public void toggleBreak(View view) {
