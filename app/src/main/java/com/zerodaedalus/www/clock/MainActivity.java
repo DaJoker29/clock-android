@@ -41,19 +41,22 @@ public class MainActivity extends AppCompatActivity {
 
         // Startup code
         sharedPref = this.getPreferences(Context.MODE_PRIVATE);
-//        editor = sharedPref.edit();
-        String currentProject = sharedPref.getString("current_project", "No active project");
-//        updateCurrentProject();
+        editor = sharedPref.edit();
+        setActiveProject(sharedPref.getString("current_project", "No active project"));
+
         initializeTimerClock();
         initializeTimerBreak();
 
         Button toggleBreak = (Button) findViewById(R.id.toggleBreak);
-
-        // Set current project display
-        TextView projectName = (TextView) findViewById(R.id.projectName);
-        projectName.setText(String.format(getResources().getString(R.string.project_display), currentProject));
-
         RadioGroup projectList = (RadioGroup) findViewById(R.id.projectList);
+
+        projectList.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                RadioButton radioButton = (RadioButton) findViewById(checkedId);
+                setActiveProject(radioButton.getText().toString());
+            }
+        });
 
         model = ViewModelProviders.of(this).get(MyViewModel.class);
         model.getProjects().observe(this, projects -> {
@@ -61,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
                 RadioButton radioButton = new RadioButton(this);
                 radioButton.setId(i + 1000);
                 radioButton.setText(projects.get(i));
+
                 projectList.addView(radioButton);
             }
             RadioButton radioDefault = (RadioButton) findViewById(R.id.radioDefault);
@@ -68,8 +72,12 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void setActiveProject(View view) {
+    public void setActiveProject(String projectName) {
+        editor.putString("current_project", projectName);
+        editor.commit();
 
+        TextView projectNameDisplay = (TextView) findViewById(R.id.projectName);
+        projectNameDisplay.setText(String.format(getResources().getString(R.string.project_display), projectName));
     }
 
     public void toggleBreak(View view) {
