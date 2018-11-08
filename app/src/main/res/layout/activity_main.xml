@@ -74,13 +74,13 @@
             android:text="@string/project_display"
             android:textAlignment="textStart"
             android:textSize="24sp"
-            app:layout_constraintEnd_toStartOf="@+id/addProject"
+            app:layout_constraintEnd_toStartOf="@+id/createProject"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <Button
-            android:id="@+id/addProject"
+            android:id="@+id/createProject"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="24dp"
@@ -107,14 +107,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/projectName">
 
-            <RadioButton
-                android:id="@+id/radioDefault"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:checked="true"
-                android:clickable="false"
-                android:text="@string/default_project_string" />
         </RadioGroup>
 
         <Chronometer

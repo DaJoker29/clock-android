@@ -1,24 +1,21 @@
 package com.zerodaedalus.www.clock;
 
-import android.arch.lifecycle.Observer;
-import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.SystemClock;
+import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Chronometer;
-import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -32,6 +29,8 @@ public class MainActivity extends AppCompatActivity {
     SharedPreferences.Editor editor;
     Snackbar snackbar;
     MyViewModel model;
+    Button createProject;
+    RadioGroup projectList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,13 +41,14 @@ public class MainActivity extends AppCompatActivity {
         // Startup code
         sharedPref = this.getPreferences(Context.MODE_PRIVATE);
         editor = sharedPref.edit();
+
         setActiveProject(sharedPref.getString("current_project", "No active project"));
 
         initializeTimerClock();
         initializeTimerBreak();
 
         Button toggleBreak = (Button) findViewById(R.id.toggleBreak);
-        RadioGroup projectList = (RadioGroup) findViewById(R.id.projectList);
+        projectList = (RadioGroup) findViewById(R.id.projectList);
 
         projectList.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
@@ -58,18 +58,46 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        model = ViewModelProviders.of(this).get(MyViewModel.class);
-        model.getProjects().observe(this, projects -> {
-            for (int i = 0; i < projects.size(); i++) {
-                RadioButton radioButton = new RadioButton(this);
-                radioButton.setId(i + 1000);
-                radioButton.setText(projects.get(i));
+        rebuildProjectList();
 
-                projectList.addView(radioButton);
+        createProject = (Button) findViewById(R.id.createProject);
+        createProject.setOnClickListener(new Button.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, CreateProjectActivity.class));
             }
-            RadioButton radioDefault = (RadioButton) findViewById(R.id.radioDefault);
-            projectList.removeView(radioDefault);
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        Intent intent = getIntent();
+        String newProject = intent.getStringExtra(CreateProjectActivity.EXTRA_PROJECT_NAME);
+        if (null != newProject) {
+            Toast.makeText(MainActivity.this, String.format("New Project Created: %s", newProject), Toast.LENGTH_SHORT).show();
+            Set<String> projects = sharedPref.getStringSet("project_list", new HashSet<String>());
+            projects.add(newProject);
+            editor.putStringSet("project_list", projects);
+            editor.commit();
+            rebuildProjectList();
+            setActiveProject(newProject);
+        }
+    }
+
+    public void rebuildProjectList() {
+        Set<String> list = sharedPref.getStringSet("project_list", new HashSet<String>());
+        String[] arr = list.toArray(new String[0]);
+
+        projectList.removeAllViews();
+        for (int i = 0; i < list.size(); i++) {
+            RadioButton radioButton = new RadioButton(this);
+            radioButton.setId(i + 1000);
+            radioButton.setText(arr[i]);
+
+            projectList.addView(radioButton);
+        }
     }
 
     public void setActiveProject(String projectName) {
