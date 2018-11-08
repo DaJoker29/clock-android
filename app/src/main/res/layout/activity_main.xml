@@ -101,7 +101,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="24dp"
             android:layout_marginTop="24dp"
-            android:checkedButton="@+id/radioDefault"
+            android:clickable="false"
             android:onClick="setActiveProject"
             app:layout_constraintHorizontal_chainStyle="packed"
             app:layout_constraintStart_toStartOf="parent"

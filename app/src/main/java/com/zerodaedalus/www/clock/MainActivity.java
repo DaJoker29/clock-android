@@ -95,9 +95,25 @@ public class MainActivity extends AppCompatActivity {
             RadioButton radioButton = new RadioButton(this);
             radioButton.setId(i + 1000);
             radioButton.setText(arr[i]);
+            radioButton.setOnLongClickListener(new RadioButton.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    removeProject(v);
+                    return true;
+                }
+            });
 
             projectList.addView(radioButton);
         }
+    }
+
+    public void removeProject(View view) {
+        RadioButton button = findViewById(view.getId());
+        Set<String> list = sharedPref.getStringSet("project_list", new HashSet<String>());
+        Boolean changed = list.remove(button.getText().toString());
+        editor.putStringSet("project_list", list);
+        editor.commit();
+        rebuildProjectList();
     }
 
     public void setActiveProject(String projectName) {

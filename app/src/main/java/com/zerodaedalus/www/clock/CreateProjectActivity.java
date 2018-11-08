@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 
@@ -21,6 +22,8 @@ public class CreateProjectActivity extends AppCompatActivity {
 
         projectName = findViewById(R.id.editText);
         submitProject = findViewById(R.id.submitProject);
+
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
 
         submitProject.setOnClickListener(new Button.OnClickListener() {
             @Override
