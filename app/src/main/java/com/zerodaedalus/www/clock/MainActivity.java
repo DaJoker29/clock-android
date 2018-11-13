@@ -4,31 +4,34 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
+    static final String CLOCK_COUNT = "ClockCount";
+    static final String CLOCK_START = "ClockStart";
+    static final String BREAK_COUNT = "BreakCount";
+    static final String BREAK_START = "BreakStart";
 
     private boolean isClockRunning = false;
     private boolean isBreakRunning = false;
+    private long clockStart;
+    private long breakStart;
     private long clockCount;
     private long breakCount;
     Chronometer timerClock;
     Chronometer timerBreak;
     SharedPreferences sharedPref;
     SharedPreferences.Editor editor;
-    Snackbar snackbar;
-    MyViewModel model;
     Button createProject;
     RadioGroup projectList;
 
@@ -43,6 +46,16 @@ public class MainActivity extends AppCompatActivity {
         editor = sharedPref.edit();
 
         setActiveProject(sharedPref.getString("current_project", "No active project"));
+
+        if (savedInstanceState != null) {
+            clockCount = savedInstanceState.getLong(CLOCK_COUNT);
+            clockStart = savedInstanceState.getLong(CLOCK_START);
+            breakCount = savedInstanceState.getLong(BREAK_COUNT);
+            breakStart = savedInstanceState.getLong(BREAK_START);
+        } else {
+            clockCount = 0;
+            breakCount = 0;
+        }
 
         initializeTimerClock();
         initializeTimerBreak();
@@ -67,6 +80,16 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(MainActivity.this, CreateProjectActivity.class));
             }
         });
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putLong(CLOCK_COUNT, clockCount);
+        outState.putLong(CLOCK_START, clockStart);
+        outState.putLong(BREAK_COUNT, breakCount);
+        outState.putLong(BREAK_START, breakStart);
+
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -119,9 +142,6 @@ public class MainActivity extends AppCompatActivity {
     public void setActiveProject(String projectName) {
         editor.putString("current_project", projectName);
         editor.commit();
-
-        TextView projectNameDisplay = (TextView) findViewById(R.id.projectName);
-        projectNameDisplay.setText(String.format(getResources().getString(R.string.project_display), projectName));
     }
 
     public void toggleBreak(View view) {
@@ -129,60 +149,65 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        timerClock.setText(String.format("Elapsed: \n%s", convertTime(clockCount)));
-        timerBreak.setText(String.format("Time on Break: \n%s", convertTime(breakCount)));
+        timerClock.setText(String.format("Elapsed: \n%s", convertTime(Calendar.getInstance().getTimeInMillis() - clockStart + clockCount)));
+        timerBreak.setText(String.format("Time on Break: \n%s", convertTime(Calendar.getInstance().getTimeInMillis() - breakStart + breakCount)));
 
 
         if(isBreakRunning) {
+            breakCount += (Calendar.getInstance().getTimeInMillis() - breakStart);
+            clockStart = Calendar.getInstance().getTimeInMillis();
             timerBreak.stop();
             timerClock.start();
-            Snackbar.make(findViewById(R.id.coordinatorLayout), R.string.break_ended, Snackbar.LENGTH_SHORT).show();
-            } else {
+            makeToast(R.string.break_ended);
+        } else {
+            clockCount += (Calendar.getInstance().getTimeInMillis() - clockStart);
+            breakStart = Calendar.getInstance().getTimeInMillis();
             timerBreak.start();
             timerClock.stop();
-
-            Snackbar.make(findViewById(R.id.coordinatorLayout), R.string.break_started, Snackbar.LENGTH_SHORT).show();
+            makeToast(R.string.break_started);
         }
         isBreakRunning = !isBreakRunning;
     }
 
-    public void toggleClock(View view) {
-        Button toggleClock = (Button) findViewById(R.id.toggleClock);
+    public void makeToast(int resId) {
+        Toast.makeText(MainActivity.this, resId, Toast.LENGTH_SHORT).show();
+    }
 
+    public void toggleClock(View view) {
         if (isBreakRunning) {
             return;
         }
 
         if (!isClockRunning) {
-            clockCount = 0;
-            breakCount = 0;
+            clockStart = Calendar.getInstance().getTimeInMillis();
 
             timerClock.start();
-
-            Snackbar.make(findViewById(R.id.coordinatorLayout), R.string.clock_started, Snackbar.LENGTH_SHORT).show();
+            makeToast(R.string.clock_started);
 
             timerBreak.setText("");
-
             timerClock.setTextColor(getResources().getColor(R.color.colorWarning, getTheme()));
         } else {
             // Clock out if clock is running.
             timerClock.stop();
             timerBreak.stop();
 
-            Snackbar.make(findViewById(R.id.coordinatorLayout), R.string.clock_ended, Snackbar.LENGTH_SHORT).show();
+            makeToast(R.string.clock_ended);
 
             timerBreak.setText(String.format("Total Break: \n%s", convertTime(breakCount)));
-            timerClock.setText(String.format("Completed: \n%s", convertTime(clockCount)));
+            timerClock.setText(String.format("Completed: \n%s", convertTime(Calendar.getInstance().getTimeInMillis() - clockStart + clockCount)));
 
             timerClock.setTextColor(getResources().getColor(R.color.colorBlack, getTheme()));
+
+            clockCount = 0;
+            breakCount = 0;
         }
         isClockRunning = !isClockRunning;
     }
 
     private String convertTime(long time) {
-        int h = (int)(time / 3600);
-        int m = (int)(time - h * 3600) / 60;
-        int s = (int)(time - h * 3600 - m * 60);
+        int h = (int)(time / 36001000);
+        int m = (int)(time - h * 3600000) / 60000;
+        int s = (int)(time - h * 3600000- m * 60000) / 1000;
         String t = String.format("%02d hr : %02d min : %02d sec", h, m, s);
         return t;
     }
@@ -192,8 +217,7 @@ public class MainActivity extends AppCompatActivity {
         timerClock.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener(){
             @Override
             public void onChronometerTick(Chronometer chronometer) {
-                chronometer.setText(String.format("Elapsed: \n%s", convertTime(clockCount)));
-                clockCount++;
+                chronometer.setText(String.format("Elapsed: \n%s", convertTime(Calendar.getInstance().getTimeInMillis() - clockStart + clockCount)));
             }
         });
         timerClock.setText("");
@@ -204,8 +228,7 @@ public class MainActivity extends AppCompatActivity {
         timerBreak.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener(){
             @Override
             public void onChronometerTick(Chronometer chronometer) {
-                chronometer.setText(String.format("Time on Break: \n%s", convertTime(breakCount)));
-                breakCount++;
+                chronometer.setText(String.format("Time on Break: \n%s", convertTime(Calendar.getInstance().getTimeInMillis() - breakStart + breakCount)));
             }
         });
         timerBreak.setText("");
